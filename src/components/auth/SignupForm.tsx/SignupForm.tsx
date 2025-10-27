@@ -1,6 +1,7 @@
 'use client';
 import { EnvelopeClosedIcon, LockClosedIcon, PersonIcon } from '@radix-ui/react-icons'
 import { Button, Flex, Text, TextField } from '@radix-ui/themes'
+import axios from 'axios';
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form';
 
@@ -19,8 +20,9 @@ function SignupForm() {
         }
     );
 
-    const onSubmit = handleSubmit((data) => {
-        console.log(data);
+    const onSubmit = handleSubmit(async (data) => {
+        const res = await axios.post('/api/auth/register', data)
+        console.log(res);
     })
     return (
         <>

@@ -1,5 +1,6 @@
 import { prisma } from '@/libs/prisma'
 import bcrypt from 'bcryptjs'
+import { NextResponse } from 'next/server'
 
 interface UserRequestBody {
   name: string
@@ -7,40 +8,13 @@ interface UserRequestBody {
   password: string
 }
 
-export async function GET() {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    })
-
-    return new Response(JSON.stringify(users), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  } catch (error) {
-    console.error('Error al obtener usuarios:', error)
-    return new Response(
-      JSON.stringify({ error: 'Error al obtener usuarios' }),
-      { status: 500 }
-    )
-  }
-}
-
-
 export async function POST(request: Request) {
   try {
     const body: UserRequestBody = await request.json()
     const { name, email, password } = body
 
-    // Validar campos requeridos
     if (!name || !email || !password) {
-      return new Response(
+      return new NextResponse(
         JSON.stringify({ error: 'Faltan campos requeridos' }),
         { status: 400 }
       )
@@ -48,13 +22,15 @@ export async function POST(request: Request) {
 
     const existingUser = await prisma.user.findUnique({ where: { email } })
     if (existingUser) {
-      return new Response(
+      return new NextResponse(
         JSON.stringify({ error: 'El correo ya está registrado' }),
         { status: 400 }
       )
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const hashedPassword = await bcrypt.genSalt(10).then((salt) => {
+      return bcrypt.hash(password, salt)
+    })
 
     const newUser = await prisma.user.create({
       data: {
@@ -64,10 +40,12 @@ export async function POST(request: Request) {
       },
     })
 
-    return new Response(JSON.stringify(newUser), { status: 201 })
+    const { password: _, ...user } = newUser  
+
+    return new NextResponse(JSON.stringify(user), { status: 201 })
   } catch (error) {
     console.error('Error al crear usuario:', error)
-    return new Response(
+    return new NextResponse(
       JSON.stringify({ error: 'Error interno del servidor' }),
       { status: 500 }
     )

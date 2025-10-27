@@ -1,6 +1,8 @@
 'use client';
 import { EnvelopeClosedIcon, LockClosedIcon } from '@radix-ui/react-icons'
 import { Button, Flex, Text, TextField } from '@radix-ui/themes'
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import React from 'react'
 import { useForm, Controller } from 'react-hook-form'
 
@@ -19,8 +21,19 @@ function SigninForm() {
         }
     );
 
-    const onSubmit = handleSubmit((data) => {
-        console.log(data);
+    const router = useRouter();
+
+    const onSubmit = handleSubmit(async (data) => {
+        const res = await signIn('credentials', {
+            email: data.email,
+            password: data.password,
+            redirect: false
+        });
+        if (!res?.ok) {
+            console.log('Error al iniciar sesión:', res?.error);
+        } else {
+            router.push('/dashboard');
+        }
     })
 
     return (

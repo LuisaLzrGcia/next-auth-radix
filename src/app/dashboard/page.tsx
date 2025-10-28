@@ -1,19 +1,37 @@
-"use client"
-import { Button, Container, Heading } from '@radix-ui/themes'
-import { useRouter } from 'next/navigation';
+import CardTasks from '@/components/dashboard/CardTasks/CardTasks';
+import HeaderDashboard from '@/components/dashboard/HeaderDashboard/HeaderDashboard';
+import { prisma } from '@/libs/prisma';
+import { Card, Container, Grid, Heading, Text } from '@radix-ui/themes';
+import { getServerSession } from 'next-auth';
 import React from 'react'
+import { authOptions } from '../api/auth/[...nextauth]/route';
 
-function DashboardPage() {
+async function loadData(userId: number) {
 
-  const router = useRouter();
+  return await prisma.project.findMany({
+    where: {
+      userId: userId
+    }
+  });
+}
+
+async function DashboardPage() {
+  const session = await getServerSession(authOptions)
+
+  const tasksFromDb = await loadData(parseInt(session?.user.id as string));
+
+  const tasks = tasksFromDb.map((task) => ({
+    id: task.id.toString(),
+    title: task.title,
+    description: task.description || "",
+  }));
   return (
     <>
-      <Container className='my-10'>
-        <div className="flex justify-between gap-4">
-          <Heading > Tasks </Heading>
-        <Button onClick={()=>router.push("/dashboard/tasks/new")}> Create New Task </Button>
-        </div>
+      <HeaderDashboard />
+      <Container>
+        <CardTasks tasks={tasks} />
       </Container>
+
     </>
   )
 }

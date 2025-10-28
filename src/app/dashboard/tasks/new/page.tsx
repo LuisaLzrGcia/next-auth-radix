@@ -25,6 +25,7 @@ function NewTaskPage() {
             const response = await axios.post('/api/tasks', data);
             console.log('Task created:', response.data);
             router.push('/dashboard');
+            router.refresh()
         } catch (error) {
             console.error('Error creating task:', error);
             // Opcional: mostrar notificación al usuario

@@ -1,9 +1,11 @@
 import { prisma } from "@/libs/prisma";
 import bcrypt from "bcryptjs";
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const handler = NextAuth({
+
+export const authOptions: AuthOptions =
+{
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -33,16 +35,32 @@ const handler = NextAuth({
                 const { password: _pwd, ...userData } = userFound;
 
                 return {
-                    ...userData,
-                    id: String(userData.id), // convertir id a string si es necesario
+                    id: userData.id + '',
+                    name: userData.name,
+                    email: userData.email,
                 };
             }
 
         }),
     ],
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id; // el id ya existe en User
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                session.user.id = token.id as string; // ahora TypeScript lo acepta
+            }
+            return session;
+        },
+    },
     pages: {
         signIn: "/auth/login",
     },
-});
+}
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

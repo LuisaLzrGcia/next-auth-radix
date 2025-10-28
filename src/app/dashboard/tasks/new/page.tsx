@@ -1,6 +1,7 @@
 "use client"
 import { ArrowLeftIcon } from '@radix-ui/react-icons';
 import { Button, Container, Flex, Heading, TextArea, TextField } from '@radix-ui/themes'
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
@@ -19,9 +20,17 @@ function NewTaskPage() {
         },
     });
 
-    const onSubmit = handleSubmit((data) => {
-        console.log(data);
+    const onSubmit = handleSubmit(async (data) => {
+        try {
+            const response = await axios.post('/api/tasks', data);
+            console.log('Task created:', response.data);
+            router.push('/dashboard');
+        } catch (error) {
+            console.error('Error creating task:', error);
+            // Opcional: mostrar notificación al usuario
+        }
     });
+
 
     return (
         <>

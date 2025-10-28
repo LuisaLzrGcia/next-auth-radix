@@ -2,7 +2,9 @@
 import { EnvelopeClosedIcon, LockClosedIcon, PersonIcon } from '@radix-ui/react-icons'
 import { Button, Flex, Text, TextField } from '@radix-ui/themes'
 import axios from 'axios';
-import React from 'react'
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import React, { use } from 'react'
 import { Controller, useForm } from 'react-hook-form';
 
 function SignupForm() {
@@ -20,9 +22,24 @@ function SignupForm() {
         }
     );
 
+    const router = useRouter();
+
     const onSubmit = handleSubmit(async (data) => {
         const res = await axios.post('/api/auth/register', data)
-        console.log(res);
+        if (res.status === 201) {
+            const resul = await signIn('credentials', {
+                email: data.email,
+                password: data.password,
+                redirect: false
+            })
+        }
+
+        if (!res.status || res.status !== 201) {
+            console.error('Registration failed');
+            return;
+        }
+
+        router.push('/dashboard');
     })
     return (
         <>

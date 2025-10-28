@@ -8,7 +8,7 @@ function LoginPage() {
         <>
             <Container size={"1"} height={"100%"} className='justify-center'>
                 <Flex className='h-screen w-full items-center'>
-                    <Card className='w-full' >
+                    <Card className='w-full m-5' >
                         <div className='p-7'>
                             <Heading>
                                 Sign In

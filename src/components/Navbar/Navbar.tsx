@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Avatar, Heading } from "@radix-ui/themes";
+import { Heading } from "@radix-ui/themes";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useSession, signOut } from "next-auth/react";
 
@@ -10,10 +10,10 @@ export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
 
-  const links = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/home", label: "Home" },
-  ];
+  // Solo mostrar "Home" si el usuario NO está logueado
+  const links = session?.user
+    ? [{ href: "/dashboard", label: "Dashboard" }]
+    : [{ href: "/home", label: "Home" }];
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -32,10 +32,11 @@ export default function Navbar() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`transition-all duration-200 px-2 py-1 ${isActive
+                    className={`transition-all duration-200 px-2 py-1 ${
+                      isActive
                         ? "text-rose-600 border-b-2 border-rose-600"
                         : "hover:text-rose-600"
-                      }`}
+                    }`}
                     aria-current={isActive ? "page" : undefined}
                   >
                     {link.label}
@@ -50,12 +51,9 @@ export default function Navbar() {
                 <DropdownMenu.Root>
                   <DropdownMenu.Trigger asChild>
                     <button className="flex items-center gap-2 bg-white text-rose-700 px-3 py-1.5 rounded-lg font-medium border border-rose-200 hover:bg-rose-50 transition-all duration-200 shadow-sm">
-                      <Avatar
-                        src={session.user.image || undefined}
-                        fallback={session.user.name?.[0]?.toUpperCase() || "A"}
-                        className="h-7 w-7 rounded-full ring-2 ring-rose-200"
-                      />
-                      <span className="hidden sm:inline">{session.user.name}</span>
+                      <span className="hidden sm:inline">
+                        {session.user.name}
+                      </span>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="w-4 h-4 text-rose-500"
@@ -78,9 +76,7 @@ export default function Navbar() {
                     sideOffset={6}
                     align="end"
                   >
-                    <DropdownMenu.Item
-                      className="px-4 py-2 text-gray-700 text-sm hover:bg-rose-50 hover:text-rose-600 cursor-pointer transition-colors duration-150"
-                    >
+                    <DropdownMenu.Item className="px-4 py-2 text-gray-700 text-sm hover:bg-rose-50 hover:text-rose-600 cursor-pointer transition-colors duration-150">
                       Profile
                     </DropdownMenu.Item>
 
@@ -100,10 +96,11 @@ export default function Navbar() {
                 <li>
                   <Link
                     href="/auth/login"
-                    className={`px-2 py-1 ${pathname === "/auth/login"
+                    className={`px-2 py-1 ${
+                      pathname === "/auth/login"
                         ? "text-rose-600 border-b-2 border-rose-600"
                         : "hover:text-rose-600"
-                      }`}
+                    }`}
                   >
                     Login
                   </Link>
@@ -111,10 +108,11 @@ export default function Navbar() {
                 <li>
                   <Link
                     href="/auth/register"
-                    className={`px-2 py-1 ${pathname === "/auth/register"
+                    className={`px-2 py-1 ${
+                      pathname === "/auth/register"
                         ? "text-rose-600 border-b-2 border-rose-600"
                         : "hover:text-rose-600"
-                      }`}
+                    }`}
                   >
                     Register
                   </Link>
@@ -122,7 +120,6 @@ export default function Navbar() {
               </>
             )}
           </ul>
-
         </div>
       </div>
     </nav>

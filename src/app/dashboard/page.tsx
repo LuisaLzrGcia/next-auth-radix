@@ -29,7 +29,15 @@ async function DashboardPage() {
     <>
       <HeaderDashboard />
       <Container>
-        <CardTasks tasks={tasks} />
+        <Grid
+          columns={{ initial: "3", md: "5", xl: "7", }}
+          gap="4"
+          className="p-4 flex justify-items-center"
+        >
+          {tasks.map((task) => (
+            <CardTasks task={task} key={task.id} />
+          ))}
+        </Grid>
       </Container>
 
     </>

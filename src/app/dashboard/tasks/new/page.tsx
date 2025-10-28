@@ -1,13 +1,16 @@
 "use client"
-import { ArrowLeftIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, TrashIcon } from '@radix-ui/react-icons';
 import { Button, Container, Flex, Heading, TextArea, TextField } from '@radix-ui/themes'
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
 
 function NewTaskPage() {
     const router = useRouter();
+
+    const params = useParams()
+    const { taskId } = params
 
     const {
         control,
@@ -21,11 +24,17 @@ function NewTaskPage() {
     });
 
     const onSubmit = handleSubmit(async (data) => {
+
         try {
-            const response = await axios.post('/api/tasks', data);
-            console.log('Task created:', response.data);
-            router.push('/dashboard');
-            router.refresh()
+            if (!taskId) {
+                const response = await axios.post('/api/tasks', data);
+                console.log('Task created:', response.data);
+                router.push('/dashboard');
+                router.refresh()
+            } else {
+
+            }
+
         } catch (error) {
             console.error('Error creating task:', error);
             // Opcional: mostrar notificación al usuario
@@ -63,7 +72,9 @@ function NewTaskPage() {
                             size="5"
                             className="text-rose-600 font-semibold mb-2 text-center md:text-left"
                         >
-                            Create New Project
+                            {
+                                params.taskId ? "Edit Project" : " Create New Project"
+                            }
                         </Heading>
 
                         {/* Project title */}
@@ -117,15 +128,28 @@ function NewTaskPage() {
                             />
                         </div>
 
-                        {/* Botón Submit */}
-                        <Flex justify="end" className="mt-4">
+                        {/* Botones de acción */}
+                        <Flex justify="between" align="center" gap="3" className="mt-4 w-full">
                             <Button
                                 type="submit"
-                                className="bg-rose-600 text-white hover:bg-rose-700 w-full md:w-auto"
+                                className="w-full"
                             >
-                                Create Project
+                                {params.taskId ? "Edit Project" : "Create New Project"}
                             </Button>
+
+                            {params.taskId && (
+                                <Button
+                                    type="button"
+                                    color='ruby'
+                                    className="w-full "
+                                >
+                                    <TrashIcon/>
+                                    Delete Project
+                                </Button>
+                            )}
                         </Flex>
+
+
                     </form>
                 </div>
             </Container>

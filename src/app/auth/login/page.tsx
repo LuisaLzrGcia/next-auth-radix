@@ -1,13 +1,21 @@
 import SigninForm from '@/components/auth/SigninForm.tsx/SigninForm'
 import { Button, Card, Container, Flex, Heading, Text } from '@radix-ui/themes'
+import { getServerSession } from 'next-auth'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import React from 'react'
 
-function LoginPage() {
+async function LoginPage() {
+
+    const session = await getServerSession()
+      if (session) {
+        redirect("/dashboard")
+      }
+
     return (
         <>
             <Container size={"1"} height={"100%"} className='justify-center'>
-                <Flex className='h-screen w-full items-center'>
+                <Flex className='h-[calc(100vh-10rem)] w-full items-center'>
                     <Card className='w-full m-5' >
                         <div className='p-7'>
                             <Heading>

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Theme } from "@radix-ui/themes";
+import { Toaster } from "sonner"; // <-- Importa Toaster
 import "./globals.css";
 import Navbar from "@/components/Navbar/Navbar";
 import ContextProvider from "@/context/GlobalContext";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -23,6 +25,9 @@ export default function RootLayout({
           <Theme appearance="dark">
             <Navbar />
             {children}
+
+            {/* Toaster de Sonner */}
+            <Toaster position="bottom-right" expand={true} richColors={true} />
           </Theme>
         </ContextProvider>
       </body>

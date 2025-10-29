@@ -30,7 +30,7 @@ async function DashboardPage() {
       <HeaderDashboard />
       <Container>
         <Grid
-          columns={{ initial: "3", md: "5", xl: "7", }}
+          columns={{ initial: "1", md: "3", xl: "6", }}
           gap="4"
           className="p-4 flex justify-items-center"
         >

@@ -1,12 +1,18 @@
 "use client"
+import ModalConfirm from '@/components/ModalConfirm/ModalConfirm';
 import { ArrowLeftIcon, TrashIcon } from '@radix-ui/react-icons';
 import { Button, Container, Flex, Heading, TextArea, TextField } from '@radix-ui/themes'
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { toast } from 'sonner';
 
 function NewTaskPage() {
+    const [modalOpen, setModalOpen] = React.useState(false);
+    const [loading, setLoading] = React.useState(false);
+
+
     const router = useRouter();
 
     const params = useParams() as { taskId: string }
@@ -16,6 +22,7 @@ function NewTaskPage() {
         control,
         handleSubmit,
         formState: { errors },
+        setValue
     } = useForm({
         defaultValues: {
             title: "",
@@ -24,43 +31,61 @@ function NewTaskPage() {
     });
 
     const onSubmit = handleSubmit(async (data) => {
-
         try {
+            setLoading(true);
             if (!taskId) {
-                const response = await axios.post('/api/tasks', data);
-                console.log('Task created:', response.data);
-                router.push('/dashboard');
-                router.refresh()
+                await axios.post('/api/tasks', data);
+                toast.success('Task created');
+                router.push("/dashboard");
             } else {
-
+                await axios.put(`/api/tasks/${taskId}`, data);
+                router.push("/dashboard");
+                toast.success('Task updated');
             }
 
         } catch (error) {
-            console.error('Error creating task:', error);
-            // Opcional: mostrar notificación al usuario
+            console.error(error);
+            toast.error('Ocurrió un error al guardar el proyecto.');
+        } finally {
+            setLoading(false);
         }
     });
 
+
+    // Borrar proyecto
     const handleDelete = async (taskId: string) => {
-        if (!taskId) {
-            alert("No se encontró el ID del proyecto.");
-            return;
-        }
-
-        const confirmDelete = confirm("¿Seguro que deseas eliminar este proyecto?");
-        if (!confirmDelete) return;
-
         try {
             const res = await axios.delete(`/api/tasks/${taskId}`);
-            alert(res.data.message || "Proyecto eliminado correctamente.");
-            router.push("/dashboard"); 
+            toast.success(res.data.message || "Project deleted successfully");
+            router.push("/dashboard");
             router.refresh();
         } catch (error) {
-            console.error("Error al eliminar el proyecto:", error);
-            alert("Ocurrió un error al eliminar el proyecto.");
+            console.error("Error deleting project:", error);
+            toast.error("Error deleting project");
         }
     };
 
+    useEffect(() => {
+        if (!taskId) return;
+
+        const fetchTask = async () => {
+            try {
+                const res = await axios.get(`/api/tasks/${taskId}`);
+                const project = res.data.project; // según cómo devuelva tu API
+
+                if (project) {
+                    // Llenar los campos del formulario
+                    setValue("title", project.title);
+                    setValue("description", project.description);
+                }
+            } catch (error) {
+                console.error("Error al obtener el proyecto:", error);
+                alert("No se pudo cargar el proyecto.");
+            }
+        };
+
+        fetchTask();
+    }, [taskId, setValue]);
 
 
     return (
@@ -154,25 +179,37 @@ function NewTaskPage() {
                             <Button
                                 type="submit"
                                 className="w-full"
+                                disabled={loading} // Deshabilitar mientras se ejecuta la petición
                             >
                                 {params.taskId ? "Edit Project" : "Create New Project"}
                             </Button>
 
-                            {params.taskId ? (
+                            {taskId && (
                                 <Button
                                     type="button"
-                                    color='ruby'
-                                    className="w-full "
-                                    onClick={() => handleDelete(params.taskId)}
+                                    color="ruby"
+                                    className="w-full"
+                                    onClick={() => setModalOpen(true)}
+                                    disabled={loading} // También deshabilitar el botón de borrar
                                 >
                                     <TrashIcon />
                                     Delete Project
                                 </Button>
-                            ) : ""}
+                            )}
                         </Flex>
+
                     </form>
                 </div>
             </Container>
+
+            {/* Modal de confirmación */}
+            <ModalConfirm
+                open={modalOpen}
+                onOpenChange={setModalOpen}
+                onConfirm={() => handleDelete(params.taskId!)}
+                title="Delete Project"
+                description="Are you sure you want to delete this project? This action cannot be undone."
+            />
         </>
     )
 }

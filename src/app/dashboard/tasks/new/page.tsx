@@ -9,7 +9,7 @@ import { Controller, useForm } from 'react-hook-form'
 function NewTaskPage() {
     const router = useRouter();
 
-    const params = useParams()
+    const params = useParams() as { taskId: string }
     const { taskId } = params
 
     const {
@@ -40,6 +40,27 @@ function NewTaskPage() {
             // Opcional: mostrar notificación al usuario
         }
     });
+
+    const handleDelete = async (taskId: string) => {
+        if (!taskId) {
+            alert("No se encontró el ID del proyecto.");
+            return;
+        }
+
+        const confirmDelete = confirm("¿Seguro que deseas eliminar este proyecto?");
+        if (!confirmDelete) return;
+
+        try {
+            const res = await axios.delete(`/api/tasks/${taskId}`);
+            alert(res.data.message || "Proyecto eliminado correctamente.");
+            router.push("/dashboard"); 
+            router.refresh();
+        } catch (error) {
+            console.error("Error al eliminar el proyecto:", error);
+            alert("Ocurrió un error al eliminar el proyecto.");
+        }
+    };
+
 
 
     return (
@@ -137,19 +158,18 @@ function NewTaskPage() {
                                 {params.taskId ? "Edit Project" : "Create New Project"}
                             </Button>
 
-                            {params.taskId && (
+                            {params.taskId ? (
                                 <Button
                                     type="button"
                                     color='ruby'
                                     className="w-full "
+                                    onClick={() => handleDelete(params.taskId)}
                                 >
-                                    <TrashIcon/>
+                                    <TrashIcon />
                                     Delete Project
                                 </Button>
-                            )}
+                            ) : ""}
                         </Flex>
-
-
                     </form>
                 </div>
             </Container>
